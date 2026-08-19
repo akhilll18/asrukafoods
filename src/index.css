@@ -1,0 +1,201 @@
+/* src/index.css */
+
+/* ============================================
+   POPPINS FONT - Google Fonts
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d97706;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b86505;
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+.Toastify__toast {
+  border-radius: 12px !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.Toastify__toast--success {
+  background: #22c55e !important;
+}
+
+.Toastify__toast--error {
+  background: #ef4444 !important;
+}
+
+.Toastify__toast--info {
+  background: #3b82f6 !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-gold {
+  color: #d97706;
+}
+
+.bg-gold {
+  background-color: #d97706;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================
+   MUI OVERRIDES (Ensure Poppins everywhere)
+   ============================================ */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiMenuItem-root,
+.MuiTab-root,
+.MuiStepLabel-root,
+.MuiChip-root,
+.MuiAlert-root,
+.MuiDialogTitle-root,
+.MuiDialogContent-root,
+.MuiDialogActions-root,
+.MuiTable-root,
+.MuiTableCell-root,
+.MuiList-root,
+.MuiListItem-root,
+.MuiCard-root,
+.MuiCardContent-root,
+.MuiCardHeader-root,
+.MuiPaper-root,
+.MuiDrawer-root,
+.MuiAppBar-root,
+.MuiToolbar-root,
+.MuiSelect-root,
+.MuiFormLabel-root,
+.MuiFormControlLabel-root,
+.MuiPagination-root,
+.MuiBreadcrumbs-root,
+.MuiSnackbar-root,
+.MuiTabs-root,
+.MuiAccordion-root,
+.MuiAccordionSummary-root,
+.MuiAccordionDetails-root {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* MUI Typography variants - ensure consistency */
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3,
+.MuiTypography-h4,
+.MuiTypography-h5,
+.MuiTypography-h6 {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.MuiTypography-body1,
+.MuiTypography-body2,
+.MuiTypography-caption,
+.MuiTypography-overline,
+.MuiTypography-subtitle1,
+.MuiTypography-subtitle2 {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Button override */
+.MuiButton-label {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Input override */
+.MuiInputBase-input,
+.MuiOutlinedInput-input,
+.MuiFilledInput-input,
+.MuiInput-input {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Select override */
+.MuiSelect-select {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Menu Item override */
+.MuiMenuItem-root {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Chip override */
+.MuiChip-label {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Table override */
+.MuiTableCell-root {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Step Label override */
+.MuiStepLabel-label {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Dialog override */
+.MuiDialogContent-root,
+.MuiDialogTitle-root,
+.MuiDialogActions-root {
+  font-family: 'Poppins', sans-serif !important;
+}
