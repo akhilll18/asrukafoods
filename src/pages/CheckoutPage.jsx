@@ -28,6 +28,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabase';
 import { createOrder, checkPincodeAvailability } from '../services/orderService';
+import RazorpayPayment from '../components/payment/RazorpayPayment'; // ADD THIS IMPORT
 
 const steps = ['Delivery Details', 'Payment Method', 'Review Order'];
 
@@ -291,6 +292,7 @@ const CheckoutPage = () => {
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
+                {/* COD Option */}
                 <Paper
                   variant="outlined"
                   sx={{
@@ -320,6 +322,7 @@ const CheckoutPage = () => {
                   />
                 </Paper>
 
+                {/* Razorpay Option */}
                 <Paper
                   variant="outlined"
                   sx={{
@@ -338,10 +341,10 @@ const CheckoutPage = () => {
                     label={
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600}>
-                          💳 Online Payment
+                          💳 Online Payment (Razorpay)
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Pay with Card, UPI, Net Banking (via Razorpay)
+                          Pay with Card, UPI, Net Banking, or Wallets
                         </Typography>
                       </Box>
                     }
@@ -431,29 +434,45 @@ const CheckoutPage = () => {
               You will receive order confirmation via email and SMS.
             </Alert>
 
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handlePlaceOrder}
-              disabled={loading}
-              sx={{
-                mt: 2,
-                bgcolor: '#d97706',
-                color: '#fff',
-                py: 1.5,
-                borderRadius: '50px',
-                fontWeight: 600,
-                textTransform: 'none',
-                '&:hover': { bgcolor: '#b86505' },
-                '&.Mui-disabled': { bgcolor: '#e5e5e5', color: '#999' },
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                `Place Order • ₹${grandTotal.toLocaleString()}`
-              )}
-            </Button>
+            {/* ============================================
+            PAYMENT BUTTON - COD or RAZORPAY
+            ============================================ */}
+            {paymentMethod === 'razorpay' ? (
+              <RazorpayPayment
+                amount={grandTotal}
+                customerName={formData.fullName}
+                phone={formData.phone}
+                email={formData.email}
+                address={`${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`}
+                items={items}
+                onSuccess={() => {}}
+                onError={() => {}}
+              />
+            ) : (
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handlePlaceOrder}
+                disabled={loading}
+                sx={{
+                  mt: 2,
+                  bgcolor: '#d97706',
+                  color: '#fff',
+                  py: 1.5,
+                  borderRadius: '50px',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#b86505' },
+                  '&.Mui-disabled': { bgcolor: '#e5e5e5', color: '#999' },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  `Place Order • ₹${grandTotal.toLocaleString()}`
+                )}
+              </Button>
+            )}
           </Box>
         );
 
