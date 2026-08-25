@@ -3,18 +3,25 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import Razorpay from 'razorpay';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-// Load environment variables from parent folder
-dotenv.config({ path: '../.env.local' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables
+dotenv.config({ path: join(__dirname, '../.env.local') });
 
 const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://asruka-foods.vercel.app'],
   credentials: true,
 }));
 app.use(express.json());
+
+console.log('🔑 Razorpay Key ID:', process.env.VITE_RAZORPAY_KEY_ID);
 
 // ============================================
 // RAZORPAY INSTANCE
@@ -23,8 +30,6 @@ const razorpay = new Razorpay({
   key_id: process.env.VITE_RAZORPAY_KEY_ID,
   key_secret: process.env.VITE_RAZORPAY_KEY_SECRET,
 });
-
-console.log('🔑 Razorpay Key ID:', process.env.VITE_RAZORPAY_KEY_ID);
 
 // ============================================
 // API ROUTES
@@ -45,7 +50,7 @@ app.post('/api/create-razorpay-order', async (req, res) => {
     const { amount, currency, receipt } = req.body;
 
     const options = {
-      amount: amount,
+      amount: amount, // amount in paise (100 paise = ₹1)
       currency: currency || 'INR',
       receipt: receipt || `receipt_${Date.now()}`,
       payment_capture: 1,
@@ -111,10 +116,10 @@ app.post('/api/verify-razorpay-payment', async (req, res) => {
 // ============================================
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log('\n========================================');
   console.log('🚀 Razorpay Server is running!');
-  console.log(`📍 http://localhost:${PORT}`);
+  console.log(`📍 Port: ${PORT}`);
   console.log('========================================');
   console.log(`📦 Razorpay Mode: ${process.env.VITE_RAZORPAY_KEY_ID?.includes('live') ? 'LIVE' : 'TEST'}`);
   console.log(`🔑 Key ID: ${process.env.VITE_RAZORPAY_KEY_ID}`);
