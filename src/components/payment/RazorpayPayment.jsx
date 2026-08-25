@@ -34,6 +34,7 @@ const RazorpayPayment = ({
     setLoading(true);
 
     try {
+      // 1. Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         toast.error('Failed to load payment gateway');
@@ -41,6 +42,7 @@ const RazorpayPayment = ({
         return;
       }
 
+      // 2. Create order in Supabase
       const orderData = {
         customer: {
           name: customerName,
@@ -69,11 +71,15 @@ const RazorpayPayment = ({
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/create-razorpay-order', {
+      // 3. Call Supabase Edge Function to create Razorpay order
+      const response = await fetch('https://umbtlmjexvryjuuvemjf.supabase.co/functions/v1/razorpay', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
         body: JSON.stringify({
-          amount: Math.round(amount * 100),
+          amount: Math.round(amount * 100), // Convert to paise
           currency: 'INR',
           receipt: orderResult.orderId,
         }),
@@ -86,6 +92,7 @@ const RazorpayPayment = ({
         return;
       }
 
+      // 4. Open Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: razorpayOrder.amount,
@@ -105,35 +112,19 @@ const RazorpayPayment = ({
           color: '#d97706',
         },
         handler: async (response) => {
+          // Payment successful
           try {
-            const verifyResponse = await fetch('http://localhost:5000/api/verify-razorpay-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                orderId: razorpayOrder.id,
+            await updateOrderPayment(orderResult.orderId, response.razorpay_payment_id, 'success');
+            toast.success('Payment successful! 🎉');
+            clearCart();
+            if (onSuccess) onSuccess(response);
+            navigate('/order-confirmation', {
+              state: {
+                orderId: orderResult.orderId,
                 paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-              }),
+                paymentMethod: 'razorpay',
+              },
             });
-
-            const verifyResult = await verifyResponse.json();
-
-            if (verifyResult.success) {
-              await updateOrderPayment(orderResult.orderId, response.razorpay_payment_id, 'success');
-              toast.success('Payment successful! 🎉');
-              clearCart();
-              if (onSuccess) onSuccess(response);
-              navigate('/order-confirmation', {
-                state: {
-                  orderId: orderResult.orderId,
-                  paymentId: response.razorpay_payment_id,
-                  paymentMethod: 'razorpay',
-                },
-              });
-            } else {
-              toast.error('Payment verification failed');
-              if (onError) onError(verifyResult.error);
-            }
           } catch (error) {
             console.error('Verification error:', error);
             toast.error('Payment verification failed');
