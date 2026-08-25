@@ -51,13 +51,9 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               
-              {/* Cart & Checkout */}
+              {/* Cart & Checkout - PUBLIC */}
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={
-                <ProtectedRoute>
-                  <CheckoutPage />
-                </ProtectedRoute>
-              } />
+              <Route path="/checkout" element={<CheckoutPage />} />  {/* ✅ REMOVED ProtectedRoute */}
               <Route path="/order-confirmation" element={
                 <ProtectedRoute>
                   <OrderConfirmationPage />
