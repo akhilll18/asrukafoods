@@ -1,55 +1,36 @@
+// src/pages/CheckoutPage.jsx - SIMPLIFIED VERSION
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  TextField,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  Divider,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Alert,
-  CircularProgress,
-  Chip,
-  Avatar,
+  Box, Container, Typography, Grid, Paper, TextField, Button,
+  Stepper, Step, StepLabel, Divider, Radio, RadioGroup,
+  FormControlLabel, FormControl, FormLabel, Alert, CircularProgress, Chip,
 } from '@mui/material';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { supabase } from '../lib/supabase';
 import { createOrder, checkPincodeAvailability } from '../services/orderService';
-import RazorpayPayment from '../components/payment/RazorpayPayment'; // ADD THIS IMPORT
+import RazorpayPayment from '../components/payment/RazorpayPayment';
 
 const steps = ['Delivery Details', 'Payment Method', 'Review Order'];
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { user, profile, isAuthenticated } = useAuth();
   const { items, totalPrice, deliveryCharge, grandTotal, clearCart, isEmpty } = useCart();
   
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pincodeValid, setPincodeValid] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState('razorpay'); // Default to Razorpay
   const [formData, setFormData] = useState({
-    fullName: profile?.name || '',
-    phone: profile?.phone || '',
-    email: user?.email || '',
-    address: profile?.address?.street || '',
-    city: profile?.address?.city || '',
-    state: profile?.address?.state || '',
-    pincode: profile?.address?.pincode || '',
-    landmark: profile?.address?.landmark || '',
+    fullName: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    landmark: '',
     orderNote: '',
   });
 
@@ -110,59 +91,6 @@ const CheckoutPage = () => {
     setActiveStep((prev) => prev - 1);
   };
 
-  const handlePlaceOrder = async () => {
-    setLoading(true);
-
-    try {
-      const orderData = {
-        total: grandTotal,
-        subtotal: totalPrice,
-        deliveryCharge: deliveryCharge,
-        customer: {
-          name: formData.fullName,
-          phone: formData.phone,
-          email: formData.email || 'customer@example.com',
-          address: {
-            street: formData.address,
-            city: formData.city,
-            state: formData.state,
-            pincode: formData.pincode,
-            landmark: formData.landmark || '',
-          },
-        },
-        items: items.map(item => ({
-          id: item.productId,
-          name: item.name,
-          weight: item.weight || '',
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        orderNote: formData.orderNote || '',
-        paymentMethod: paymentMethod,
-      };
-
-      const result = await createOrder(orderData);
-
-      if (result.success) {
-        clearCart();
-        navigate('/order-confirmation', {
-          state: {
-            orderId: result.orderId,
-            order: result.order,
-            paymentMethod: paymentMethod,
-          },
-        });
-      } else {
-        toast.error(result.error || 'Failed to place order');
-      }
-    } catch (error) {
-      console.error('Order error:', error);
-      toast.error('Error placing order');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getStepContent = (step) => {
     switch (step) {
       case 0:
@@ -199,7 +127,6 @@ const CheckoutPage = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Enter your email address"
-                disabled={!!user?.email}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -292,41 +219,12 @@ const CheckoutPage = () => {
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
-                {/* COD Option */}
+                {/* Razorpay Option (Default) */}
                 <Paper
                   variant="outlined"
                   sx={{
                     p: 2,
                     mb: 1.5,
-                    cursor: 'pointer',
-                    borderColor: paymentMethod === 'cod' ? '#d97706' : '#e0e0e0',
-                    bgcolor: paymentMethod === 'cod' ? 'rgba(217,119,6,0.05)' : 'transparent',
-                    transition: 'all 0.3s ease',
-                    '&:hover': { borderColor: '#d97706' },
-                  }}
-                  onClick={() => setPaymentMethod('cod')}
-                >
-                  <FormControlLabel
-                    value="cod"
-                    control={<Radio sx={{ color: '#d97706', '&.Mui-checked': { color: '#d97706' } }} />}
-                    label={
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          📦 Cash on Delivery
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Pay when you receive your order
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </Paper>
-
-                {/* Razorpay Option */}
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 2,
                     cursor: 'pointer',
                     borderColor: paymentMethod === 'razorpay' ? '#d97706' : '#e0e0e0',
                     bgcolor: paymentMethod === 'razorpay' ? 'rgba(217,119,6,0.05)' : 'transparent',
@@ -350,6 +248,35 @@ const CheckoutPage = () => {
                     }
                   />
                 </Paper>
+
+                {/* COD Option */}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    cursor: 'pointer',
+                    borderColor: paymentMethod === 'cod' ? '#d97706' : '#e0e0e0',
+                    bgcolor: paymentMethod === 'cod' ? 'rgba(217,119,6,0.05)' : 'transparent',
+                    transition: 'all 0.3s ease',
+                    '&:hover': { borderColor: '#d97706' },
+                  }}
+                  onClick={() => setPaymentMethod('cod')}
+                >
+                  <FormControlLabel
+                    value="cod"
+                    control={<Radio sx={{ color: '#d97706', '&.Mui-checked': { color: '#d97706' } }} />}
+                    label={
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          📦 Cash on Delivery
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pay when you receive your order
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </Paper>
               </RadioGroup>
             </FormControl>
 
@@ -368,7 +295,6 @@ const CheckoutPage = () => {
               Order Summary
             </Typography>
             
-            {/* Items */}
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Items ({items.length})
@@ -403,10 +329,6 @@ const CheckoutPage = () => {
               </Box>
             </Paper>
 
-            {/* Delivery Details */}
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Delivery Details
-            </Typography>
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
               <Typography variant="body2">
                 <strong>{formData.fullName}</strong>
@@ -417,26 +339,8 @@ const CheckoutPage = () => {
               <Typography variant="body2" color="text.secondary">
                 📞 {formData.phone}
               </Typography>
-              {formData.landmark && (
-                <Typography variant="body2" color="text.secondary">
-                  📍 Landmark: {formData.landmark}
-                </Typography>
-              )}
             </Paper>
 
-            {paymentMethod === 'cod' && (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                Cash on Delivery: Please keep exact change ready at the time of delivery.
-              </Alert>
-            )}
-
-            <Alert severity="info" sx={{ mb: 2 }}>
-              You will receive order confirmation via email and SMS.
-            </Alert>
-
-            {/* ============================================
-            PAYMENT BUTTON - COD or RAZORPAY
-            ============================================ */}
             {paymentMethod === 'razorpay' ? (
               <RazorpayPayment
                 amount={grandTotal}
@@ -452,8 +356,48 @@ const CheckoutPage = () => {
               <Button
                 variant="contained"
                 fullWidth
-                onClick={handlePlaceOrder}
-                disabled={loading}
+                onClick={async () => {
+                  // Simple COD order
+                  const orderData = {
+                    total: grandTotal,
+                    subtotal: totalPrice,
+                    deliveryCharge: deliveryCharge,
+                    customer: {
+                      name: formData.fullName,
+                      phone: formData.phone,
+                      email: formData.email || 'customer@example.com',
+                      address: {
+                        street: formData.address,
+                        city: formData.city,
+                        state: formData.state,
+                        pincode: formData.pincode,
+                        landmark: formData.landmark || '',
+                      },
+                    },
+                    items: items.map(item => ({
+                      id: item.productId,
+                      name: item.name,
+                      weight: item.weight || '',
+                      quantity: item.quantity,
+                      price: item.price,
+                    })),
+                    orderNote: formData.orderNote || '',
+                    paymentMethod: 'cod',
+                  };
+
+                  const { createOrder } = await import('../services/orderService');
+                  const result = await createOrder(orderData);
+                  if (result.success) {
+                    clearCart();
+                    navigate('/order-confirmation', {
+                      state: {
+                        orderId: result.orderId,
+                        order: result.order,
+                        paymentMethod: 'cod',
+                      },
+                    });
+                  }
+                }}
                 sx={{
                   mt: 2,
                   bgcolor: '#d97706',
@@ -463,14 +407,9 @@ const CheckoutPage = () => {
                   fontWeight: 600,
                   textTransform: 'none',
                   '&:hover': { bgcolor: '#b86505' },
-                  '&.Mui-disabled': { bgcolor: '#e5e5e5', color: '#999' },
                 }}
               >
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  `Place Order • ₹${grandTotal.toLocaleString()}`
-                )}
+                Place Order • ₹{grandTotal.toLocaleString()}
               </Button>
             )}
           </Box>
@@ -491,11 +430,7 @@ const CheckoutPage = () => {
         >
           <Typography
             variant="h4"
-            sx={{
-              mb: 4,
-              fontWeight: 700,
-              fontFamily: "'Playfair Display', serif",
-            }}
+            sx={{ mb: 4, fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
           >
             Checkout
           </Typography>
@@ -589,15 +524,6 @@ const CheckoutPage = () => {
                     ₹{grandTotal.toLocaleString()}
                   </Typography>
                 </Box>
-
-                <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Typography variant="caption" color="text.secondary">
-                    🔒 Secure Checkout
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    🚚 Free Delivery above ₹500
-                  </Typography>
-                </Box>
               </Paper>
             </Grid>
           </Grid>
@@ -607,4 +533,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage; 
+export default CheckoutPage;
