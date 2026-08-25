@@ -1,29 +1,23 @@
 // src/services/paymentService.js
 import { supabase } from '../lib/supabase';
-import { toast } from 'react-toastify';
 
 // ============================================
-// CREATE ORDER IN SUPABASE
+// CREATE ORDER IN SUPABASE (NO LOGIN REQUIRED)
 // ============================================
 export const createOrder = async (orderData) => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      toast.error('Please login to place order');
-      return { success: false, error: 'Not authenticated' };
-    }
-
+    // Generate order ID
     const orderId = `ORD_${Date.now()}`;
 
+    // Create order in Supabase with guest user
     const { data, error } = await supabase
       .from('orders')
       .insert({
         order_id: orderId,
-        user_id: session.user.id,
+        user_id: null, // Guest user
         customer: orderData.customer,
         items: orderData.items,
-        subtotal: orderData.subtotal,
+        subtotal: orderData.subtotal || orderData.total,
         delivery_charge: orderData.deliveryCharge || 0,
         total: orderData.total,
         order_note: orderData.orderNote || '',
@@ -42,7 +36,10 @@ export const createOrder = async (orderData) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Order creation error:', error);
+      return { success: false, error: error.message };
+    }
 
     return {
       success: true,
@@ -84,6 +81,25 @@ export const updateOrderPayment = async (orderId, paymentId, status) => {
     return { success: true, order: data };
   } catch (error) {
     console.error('Error updating order payment:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// ============================================
+// GET ORDER BY ID
+// ============================================
+export const getOrderById = async (orderId) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_id', orderId)
+      .single();
+
+    if (error) throw error;
+    return { success: true, order: data };
+  } catch (error) {
+    console.error('Error fetching order:', error);
     return { success: false, error: error.message };
   }
 };
